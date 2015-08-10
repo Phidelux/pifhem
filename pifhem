@@ -20,6 +20,13 @@ FHEM_HOSTNAME=""
 FHEM_USER_NAME=fhem
 FHEM_USER_PASS=s3cr37
 FHEM_ROOT_PASS=""
+FHEM_DELETE_USER=0
+FHEM_UPDATE=0
+FHEM_CLEANUP=0
+
+FHEM_PATH=/opt/fhem
+FHEM_DAEMON="perl $FHEM_PATH/fhem.pl"
+FHEM_DAEMON_OPTS="$FHEM_PATH/fhem.cfg"
 
 # Define the usage text.
 USAGE=$( cat <<EOF
@@ -38,6 +45,12 @@ Usage: `basename $0` [-hv] [-V <fhem_version>] [-H <hostname>] [-u <username>] [
 \tPassword of the fhem user.
 -r|--root
 \tPassword of the root user.
+-d|--delete
+\tDelete default pi user.
+-U|--update
+\tUpdate base system.
+-c|--cleanup
+\tCleanup old kernels.
 EOF
 )
 
@@ -133,6 +146,15 @@ do
 
       shift
       ;;
+    -d|--delete)
+      FHEM_DELETE_USER=1
+      ;;
+    -U|--update)
+      FHEM_UPDATE=1
+      ;;
+    -C|--cleanup)
+      FHEM_CLEANUP=1
+      ;;
     -*)
       error "unrecognized option: $1\n\n$USAGE"
       ;;
@@ -159,23 +181,27 @@ if [ ! -z "$FHEM_HOSTNAME" -a "$FHEM_HOSTNAME" != " " ]; then
   sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$FHEM_HOSTNAME/g" /etc/hosts
 fi
 
-# Fetch the latest package information ...
-apt-get -y update
+if [ $FHEM_UPDATE == "1" ]; then
+  # Fetch the latest package information ...
+  apt-get -y update
 
-# ... and run a system upgrade.
-apt-get -y dist-upgrade
+  # ... and run a system upgrade.
+  apt-get -y dist-upgrade
 
-# Install required software packages.
-apt-get -y install build-essential vim htop telnet wget curl w3m lynx screen unzip libdevice-serialport-perl libio-socket-ssl-perl libwww-perl
+  # Install required software packages.
+  apt-get -y install build-essential vim htop telnet wget curl w3m lynx screen unzip libdevice-serialport-perl libio-socket-ssl-perl libwww-perl
 
-# Rebuild dkms for all installed kernel versions.
-ls /var/lib/initramfs-tools | xargs -n1 /usr/lib/dkms/dkms_autoinstaller start 
+  # Rebuild dkms for all installed kernel versions.
+  ls /var/lib/initramfs-tools | xargs -n1 /usr/lib/dkms/dkms_autoinstaller start 
+fi
 
-# Remove outdated kernel(s) ...
-dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | grep -E "(image|headers)" | xargs apt-get -y purge
+if [ $FHEM_CLEANUP == "1" ]; then
+  # Remove outdated kernel(s) ...
+  dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | grep -E "(image|headers)" | xargs apt-get -y purge
 
-# ... and update grub.
-update-grub
+  # ... and update grub.
+  update-grub
+fi
 
 # Remove the desktop environment ...
 apt-get -y remove task-desktop
@@ -184,7 +210,9 @@ apt-get -y remove task-desktop
 apt-get -y autoremove
 
 # Delete the old raspberry pi user.
-userdel --remove-home pi
+if [ "$FHEM_DELETE_USER" == "1" ]; then
+  userdel --remove-home pi
+fi
 
 # Create a new fhem user ...
 useradd -m -g users -G sudo -s /bin/bash fhem
@@ -235,22 +263,22 @@ cat > /etc/init.d/fhem <<EOF
 # Required-Stop:        \$local_fs \$remote_fs
 # Default-Start:        2 3 4 5
 # Default-Stop:         0 1 6
-# Short-Description:    FHEM server
+# Short-Description:    Starts the FHEM server
+# Description:          Start FHEM
 ### END INIT INFO
 
 set -e
-FHEM_PATH=/opt/fhem
 FHEM_TELNET_PORT=7072
 
 case "\$1" in
 'start')
         echo "Starting fhem..."
-        perl \$FHEM_PATH/fhem.pl \$FHEM_PATH/fhem.cfg
+        start-stop-daemon --start --chuid $FHEM_USER_NAME --start --exec "$FHEM_DAEMON" -- $FHEM_DAEMON_OPTS
         RETVAL=\$?
         ;;
 'stop')
         echo "Stopping fhem..."
-        perl \$FHEM_PATH/fhem.pl \$FHEM_TELNET_PORT "shutdown"
+        perl $FHEM_PATH/fhem.pl \$FHEM_TELNET_PORT "shutdown"
         RETVAL=\$?
         ;;
 'status')
@@ -268,6 +296,3 @@ case "\$1" in
 esac
 exit \$RETVAL
 EOF
-
-# Finally start the fhem service.
-su - $FHEM_USER_NAME -c "/etc/init.d/fhem start"
