@@ -6,10 +6,7 @@ Simple bash script to setup fhem on Raspberry Pi
 
 **CAUTION!** This script is currently meant to create a raspberry pi fhem server from scratch. It does the following additional steps:
 
- - Updating the system
- - Deleting old kernels
  - Removing the raspbian desktop
- - Deleting the pi user
 
 ## Upcoming Changes
 
@@ -47,6 +44,12 @@ This should prompt the following:
        Password of the fhem user.
     -r|--root
        Password of the root user. 
+    -d|--delete
+       Delete default pi user.
+    -U|--update
+       Update base system.
+    -c|--cleanup
+      Cleanup old kernels.
 
 To install fhem version *5.6*, change the hostname to *pifhem*, create an *fhem* user with password *s3cr37* and change the root password to *v3rys3cr37* you can run the follwing command:
 
