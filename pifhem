@@ -27,6 +27,7 @@ FHEM_CLEANUP=0
 FHEM_PATH=/opt/fhem
 FHEM_DAEMON="perl $FHEM_PATH/fhem.pl"
 FHEM_DAEMON_OPTS="$FHEM_PATH/fhem.cfg"
+FHEM_DAEMON_STOP_OPTS="7072 \"shutdown\""
 
 # Define the usage text.
 USAGE=$( cat <<EOF
@@ -215,7 +216,7 @@ if [ "$FHEM_DELETE_USER" == "1" ]; then
 fi
 
 # Create a new fhem user ...
-useradd -m -g users -G sudo -s /bin/bash fhem
+useradd -m -g users -G sudo -s /bin/bash $FHEM_USER_NAME
 
 # ... and set the default password.
 echo $FHEM_USER_NAME:$FHEM_USER_PASS | chpasswd
@@ -268,7 +269,6 @@ cat > /etc/init.d/fhem <<EOF
 ### END INIT INFO
 
 set -e
-FHEM_TELNET_PORT=7072
 
 case "\$1" in
 'start')
@@ -278,7 +278,7 @@ case "\$1" in
         ;;
 'stop')
         echo "Stopping fhem..."
-        perl $FHEM_PATH/fhem.pl \$FHEM_TELNET_PORT "shutdown"
+        start-stop-daemon --stop --chuid $FHEM_USER_NAME --stop --exec "$FHEM_DAEMON" -- $FHEM_DAEMON_STOP_OPTS
         RETVAL=\$?
         ;;
 'status')
@@ -296,3 +296,5 @@ case "\$1" in
 esac
 exit \$RETVAL
 EOF
+
+/etc/init.d/fhem start
