@@ -23,6 +23,7 @@ FHEM_ROOT_PASS=""
 FHEM_DELETE_USER=0
 FHEM_UPDATE=0
 FHEM_CLEANUP=0
+FHEM_NTP=0
 
 FHEM_PATH=/opt/fhem
 FHEM_DAEMON="perl $FHEM_PATH/fhem.pl"
@@ -52,6 +53,8 @@ Usage: `basename $0` [-hv] [-V <fhem_version>] [-H <hostname>] [-u <username>] [
 \tUpdate base system.
 -c|--cleanup
 \tCleanup old kernels.
+-n|--ntp
+\tSetup ntp as datetime server.
 EOF
 )
 
@@ -159,6 +162,10 @@ do
       FHEM_CLEANUP=1
       shift
       ;;
+    -n|--ntp)
+      FHEM_NTP=1
+      shift
+      ;;
     -*)
       error "unrecognized option: $1\n\n$USAGE"
       ;;
@@ -207,6 +214,20 @@ if [ $FHEM_CLEANUP == "1" ]; then
   update-grub
 fi
 
+if [ $FHEM_NTP == "1" ]; then
+  # Install the ntp daemon, ...
+  apt-get -y install ntp
+
+  # ... create a very basic ntp.conf file ...
+  echo "server 0.europe.pool.ntp.org
+server 1.europe.pool.ntp.org
+server 2.europe.pool.ntp.org
+server 3.europe.pool.ntp.org" > /etc/ntp.conf
+
+  # ... and start the ntp daemon.
+  /etc/init.d/ntp restart
+fi
+
 # Remove the desktop environment ...
 apt-get -y remove task-desktop
 
@@ -215,7 +236,7 @@ apt-get -y autoremove
 
 # Delete the old raspberry pi user.
 if [ "$FHEM_DELETE_USER" == "1" ]; then
-  userdel --remove-home pi
+  userdel --remove pi
 fi
 
 # Create a new fhem user ...
