@@ -32,7 +32,7 @@ FHEM_DAEMON_STOP_OPTS="7072 \"shutdown\""
 
 # Define the usage text.
 USAGE=$( cat <<EOF
-Usage: `basename $0` [-hv] [-V <fhem_version>] [-H <hostname>] [-u <username>] [-p <user_password>] [-r <root_password>]\n
+Usage: `basename $0` [-hvdUcn] [-V <fhem_version>] [-H <hostname>] [-u <username>] [-p <user_password>] [-r <root_password>]\n
 -h|--help:
 \tDisplays this help.
 -v|--version

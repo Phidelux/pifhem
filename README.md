@@ -28,28 +28,30 @@ Switch into the downloaded directory and run the *pifhem* script with the -h opt
 
 This should prompt the following:
 
-    Usage: pifhem [-hv] [-V <fhem_version>] [-H <hostname>] [-u <username>] [-p <user_password>] [-r <root_password>]
+    Usage: pifhem [-hvdUcn] [-V <fhem_version>] [-H <hostname>] [-u <username>] [-p <user_password>] [-r <root_password>]
 
     -h|--help:
-       Displays this help.
+      Displays this help.
     -v|--version
-       Displays the current version of this script.
+      Displays the current version of this script.
     -V|--fhem-version
-       Fhem version to be used.
+      Fhem version to be used.
     -H|--hostname
-       The hostname to be used.
+      The hostname to be used.
     -u|--username
-       Name of the fhem user.
+      Name of the fhem user.
     -p|--password
-       Password of the fhem user.
+      Password of the fhem user.
     -r|--root
-       Password of the root user. 
+      Password of the root user.
     -d|--delete
-       Delete default pi user.
+      Delete default pi user.
     -U|--update
-       Update base system.
+      Update base system.
     -c|--cleanup
       Cleanup old kernels.
+    -n|--ntp
+      Setup ntp as datetime server.
 
 To install fhem version *5.6*, change the hostname to *pifhem*, create an *fhem* user with password *s3cr37* and change the root password to *v3rys3cr37* you can run the follwing command:
 
