@@ -149,12 +149,15 @@ do
       ;;
     -d|--delete)
       FHEM_DELETE_USER=1
+      shift
       ;;
     -U|--update)
       FHEM_UPDATE=1
+      shift
       ;;
-    -C|--cleanup)
+    -c|--cleanup)
       FHEM_CLEANUP=1
+      shift
       ;;
     -*)
       error "unrecognized option: $1\n\n$USAGE"
@@ -166,12 +169,12 @@ do
 done
 
 # First of all change the root password.
-if [ ! -z "$FHEM_ROOT_PASS" -a "$FHEM_ROOT_PASS" != " " ]; then
+if [ ! -z "${FHEM_ROOT_PASS// }" ]; then
   echo $ROOT_NAME:$FHEM_ROOT_PASS | chpasswd
 fi
 
 # Change hostname of given.
-if [ ! -z "$FHEM_HOSTNAME" -a "$FHEM_HOSTNAME" != " " ]; then
+if [ ! -z "${FHEM_HOSTNAME// }" ]; then
   # Fetch the current hostname ...
   CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
 
