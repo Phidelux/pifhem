@@ -26,8 +26,8 @@ FHEM_CLEANUP=0
 FHEM_NTP=0
 
 FHEM_PATH=/opt/fhem
-FHEM_DAEMON="perl $FHEM_PATH/fhem.pl"
-FHEM_DAEMON_OPTS="$FHEM_PATH/fhem.cfg"
+FHEM_DAEMON="/usr/bin/perl fhem.pl"
+FHEM_DAEMON_OPTS="fhem.cfg"
 FHEM_DAEMON_STOP_OPTS="7072 \"shutdown\""
 
 # Define the usage text.
@@ -297,12 +297,12 @@ set -e
 case "\$1" in
 'start')
         echo "Starting fhem..."
-        start-stop-daemon --start --chuid $FHEM_USER_NAME --start --exec "$FHEM_DAEMON" -- $FHEM_DAEMON_OPTS
+        start-stop-daemon -d $FHEM_PATH --start --chuid $FHEM_USER_NAME --start --exec $FHEM_DAEMON -- $FHEM_DAEMON_OPTS
         RETVAL=\$?
         ;;
 'stop')
         echo "Stopping fhem..."
-        start-stop-daemon --stop --chuid $FHEM_USER_NAME --stop --exec "$FHEM_DAEMON" -- $FHEM_DAEMON_STOP_OPTS
+        start-stop-daemon -d $FHEM_PATH --stop --chuid $FHEM_USER_NAME --stop --exec $FHEM_DAEMON -- $FHEM_DAEMON_STOP_OPTS
         RETVAL=\$?
         ;;
 'status')
