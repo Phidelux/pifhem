@@ -1,6 +1,6 @@
 # pifhem
 
-Simple bash script to setup fhem on Raspberry Pi
+Simple bash script to setup the fhem server on Raspberry Pi
 
 ## Hints
 
