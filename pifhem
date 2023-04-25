@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Copyright 2015 Andreas Wilhelm
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -87,7 +87,7 @@ fi
 # Fetch command line options.
 while [[ -n "${1+xxx}" ]]
 do
-  case "$1" in 
+  case "$1" in
     --help|-h)
       info "$USAGE"
       ;;
@@ -110,7 +110,7 @@ do
       shift
       FHEM_HOSTNAME=$1
 
-      if [[ ! "$FHEM_HOSTNAME" ]]; then 
+      if [[ ! "$FHEM_HOSTNAME" ]]; then
         error "Missing hostname!\n\n$USAGE"
       fi
 
@@ -203,7 +203,7 @@ if [ $FHEM_UPDATE == "1" ]; then
   apt-get -y install build-essential vim htop telnet wget curl w3m lynx screen unzip libdevice-serialport-perl libio-socket-ssl-perl libwww-perl
 
   # Rebuild dkms for all installed kernel versions.
-  ls /var/lib/initramfs-tools | xargs -n1 /usr/lib/dkms/dkms_autoinstaller start 
+  ls /var/lib/initramfs-tools | xargs -n1 /usr/lib/dkms/dkms_autoinstaller start
 fi
 
 if [ $FHEM_CLEANUP == "1" ]; then
