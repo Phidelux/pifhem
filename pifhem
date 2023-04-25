@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # Script configuration.
-FHEM_VERSION=5.6
+FHEM_VERSION=6.2
 FHEM_HOSTNAME=""
 FHEM_USER_NAME=fhem
 FHEM_USER_PASS=s3cr37
