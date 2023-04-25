@@ -32,7 +32,7 @@ FHEM_DAEMON_STOP_OPTS="7072 \"shutdown\""
 
 # Define the usage text.
 USAGE=$( cat <<EOF
-Usage: `basename $0` [-hvdUcn] [-V <fhem_version>] [-H <hostname>] [-u <username>] [-p <user_password>] [-r <root_password>]\n
+Usage: $(basename "${0}") [-hvdUcn] [-V <fhem_version>] [-H <hostname>] [-u <username>] [-p <user_password>] [-r <root_password>]\n
 -h|--help:
 \tDisplays this help.
 -v|--version
@@ -58,7 +58,7 @@ Usage: `basename $0` [-hvdUcn] [-V <fhem_version>] [-H <hostname>] [-u <username
 EOF
 )
 
-# All users with $UID 0 have root privileges.
+# All users with ${UID} 0 have root privileges.
 ROOT_UID=0
 
 # Just one single user is called root.
@@ -80,72 +80,72 @@ function error() {
 }
 
 # Check if user has root privileges.
-if [[ $EUID -ne $ROOT_UID ]]; then
+if [[ ${EUID} -ne ${ROOT_UID} ]]; then
   error "This script must be run as root!"
 fi
 
 # Fetch command line options.
 while [[ -n "${1+xxx}" ]]
 do
-  case "$1" in
+  case "${1}" in
     --help|-h)
-      info "$USAGE"
+      info "${USAGE}"
       ;;
     --version|-v)
-      info "`basename $0` version 1.0"
+		info "$(basename "${0}") version 1.0"
       ;;
     -V|--fhem-version)
       shift
-      FHEM_VERSION=$1
+      FHEM_VERSION=${1}
 
-      if [[ ! "$FHEM_VERSION" ]]; then
-        error "Missing fhem version code!\n\n$USAGE"
+      if [ -z "${FHEM_VERSION}" ]; then
+        error "Missing fhem version code!\n\n${USAGE}"
       fi
 
-      FHEM_VERSION=$(tr '[:upper:]' '[:lower:]' <<< $FHEM_VERSION)
+      FHEM_VERSION=$(tr '[:upper:]' '[:lower:]' <<< "${FHEM_VERSION}")
 
       shift
       ;;
     -H|-hostname)
       shift
-      FHEM_HOSTNAME=$1
+      FHEM_HOSTNAME=${1}
 
-      if [[ ! "$FHEM_HOSTNAME" ]]; then
-        error "Missing hostname!\n\n$USAGE"
+      if [ -z "${FHEM_HOSTNAME}" ]; then
+        error "Missing hostname!\n\n${USAGE}"
       fi
 
-      FHEM_HOSTNAME=$(tr '[:upper:]' '[:lower:]' <<< $FHEM_HOSTNAME)
+      FHEM_HOSTNAME=$(tr '[:upper:]' '[:lower:]' <<< "${FHEM_HOSTNAME}")
 
       shift
       ;;
     -u|--username)
       shift
-      FHEM_USER_NAME=$1
+      FHEM_USER_NAME=${1}
 
-      if [[ ! "$FHEM_USER_NAME" ]]; then
-        error "Missing username!\n\n$USAGE"
+      if [ -z "${FHEM_USER_NAME}" ]; then
+        error "Missing username!\n\n${USAGE}"
       fi
 
-      FHEM_USER_NAME=$(tr '[:upper:]' '[:lower:]' <<< $FHEM_USER_NAME)
+      FHEM_USER_NAME=$(tr '[:upper:]' '[:lower:]' <<< "${FHEM_USER_NAME}")
 
       shift
       ;;
     -p|--password)
       shift
-      FHEM_USER_PASS=$1
+      FHEM_USER_PASS=${1}
 
-      if [[ ! "$FHEM_USER_PASS" ]]; then
-        error "Missing user password!\n\n$USAGE"
+      if [ -z "${FHEM_USER_PASS}" ]; then
+        error "Missing user password!\n\n${USAGE}"
       fi
 
       shift
       ;;
     -r|--root)
       shift
-      FHEM_ROOT_PASS=$1
+      FHEM_ROOT_PASS=${1}
 
-      if [[ ! "$FHEM_ROOT_PASS" ]]; then
-        error "Missing root password!\n\n$USAGE"
+      if [ -z "${FHEM_ROOT_PASS}" ]; then
+        error "Missing root password!\n\n${USAGE}"
       fi
 
       shift
@@ -167,7 +167,7 @@ do
       shift
       ;;
     -*)
-      error "unrecognized option: $1\n\n$USAGE"
+      error "unrecognized option: ${1}\n\n${USAGE}"
       ;;
     *)
       break
@@ -176,23 +176,23 @@ do
 done
 
 # First of all change the root password.
-if [ ! -z "${FHEM_ROOT_PASS// }" ]; then
-  echo $ROOT_NAME:$FHEM_ROOT_PASS | chpasswd
+if [ -n "${FHEM_ROOT_PASS// }" ]; then
+  echo "${ROOT_NAME}:${FHEM_ROOT_PASS}" | chpasswd
 fi
 
 # Change hostname of given.
-if [ ! -z "${FHEM_HOSTNAME// }" ]; then
+if [ -n "${FHEM_HOSTNAME// }" ]; then
   # Fetch the current hostname ...
-  CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
+  CURRENT_HOSTNAME=$(tr -d " \t\n\r" < /etc/hostname)
 
   # ... and change it within /etc/hostname ...
-  echo $FHEM_HOSTNAME > /etc/hostname
+  echo "${FHEM_HOSTNAME}" > /etc/hostname
 
   # ... and within /etc/hosts.
-  sed -i "s/127.0.1.1.*$CURRENT_HOSTNAME/127.0.1.1\t$FHEM_HOSTNAME/g" /etc/hosts
+  sed -i "s/127.0.1.1.*${CURRENT_HOSTNAME}/127.0.1.1\t${FHEM_HOSTNAME}/g" /etc/hosts
 fi
 
-if [ $FHEM_UPDATE == "1" ]; then
+if [ ${FHEM_UPDATE} -eq 1 ]; then
   # Fetch the latest package information ...
   apt-get -y update
 
@@ -206,15 +206,15 @@ if [ $FHEM_UPDATE == "1" ]; then
   ls /var/lib/initramfs-tools | xargs -n1 /usr/lib/dkms/dkms_autoinstaller start
 fi
 
-if [ $FHEM_CLEANUP == "1" ]; then
+if [ ${FHEM_CLEANUP} -eq 1 ]; then
   # Remove outdated kernel(s) ...
-  dpkg -l linux-* | awk '/^ii/{ print $2}' | grep -v -e `uname -r | cut -f1,2 -d"-"` | grep -e [0-9] | grep -E "(image|headers)" | xargs apt-get -y purge
+  dpkg -l linux-* | awk '/^ii/{ print ${2}}' | grep -v -e "$(uname -r | cut -f1,2 -d"-")" | grep -e "[0-9]" | grep -E "(image|headers)" | xargs apt-get -y purge
 
   # ... and update grub.
   update-grub
 fi
 
-if [ $FHEM_NTP == "1" ]; then
+if [ ${FHEM_NTP} -eq 1 ]; then
   # Install the ntp daemon, ...
   apt-get -y install ntp
 
@@ -235,24 +235,24 @@ apt-get -y remove task-desktop
 apt-get -y autoremove
 
 # Delete the old raspberry pi user.
-if [ "$FHEM_DELETE_USER" == "1" ]; then
+if [ ${FHEM_DELETE_USER} -eq 1 ]; then
   userdel --remove pi
 fi
 
 # Create a new fhem user ...
-useradd -m -g users -G sudo -s /bin/bash $FHEM_USER_NAME
+useradd -m -g users -G sudo -s /bin/bash "${FHEM_USER_NAME}"
 
 # ... and set the default password.
-echo $FHEM_USER_NAME:$FHEM_USER_PASS | chpasswd
+echo "${FHEM_USER_NAME}:${FHEM_USER_PASS}" | chpasswd
 
 # Download the latest fhem release, ...
-wget www.fhem.de/fhem-${FHEM_VERSION}.tar.gz -O /tmp/fhem-${FHEM_VERSION}.tar.gz
+wget "https://www.fhem.de/fhem-${FHEM_VERSION}.tar.gz" -O "/tmp/fhem-${FHEM_VERSION}.tar.gz"
 
 # ... extract the downloaded archive, ...
-tar xzvf /tmp/fhem-${FHEM_VERSION}.tar.gz -C /tmp
+tar xzvf "/tmp/fhem-${FHEM_VERSION}.tar.gz" -C /tmp
 
 # ... switch into the downloaded folder, ...
-cd /tmp/fhem-${FHEM_VERSION}
+cd "/tmp/fhem-${FHEM_VERSION}" || exit 1
 
 # ... and run the installation procedure.
 make install
@@ -261,7 +261,7 @@ make install
 chown -R fhem /opt/fhem
 
 # ... and remove the downloaded archive.
-rm -r /tmp/fhem-${FHEM_VERSION}.tar.gz /tmp/fhem-${FHEM_VERSION}
+rm -r "/tmp/fhem-${FHEM_VERSION}.tar.gz" "/tmp/fhem-${FHEM_VERSION}"
 
 # Create the fhem systemd service ...
 echo "[Unit]
@@ -284,8 +284,8 @@ cat > /etc/init.d/fhem <<EOF
 
 ### BEGIN INIT INFO
 # Provides:             fhem.pl
-# Required-Start:       \$local_fs \$remote_fs
-# Required-Stop:        \$local_fs \$remote_fs
+# Required-Start:       \${local_fs} \${remote_fs}
+# Required-Stop:        \${local_fs} \${remote_fs}
 # Default-Start:        2 3 4 5
 # Default-Stop:         0 1 6
 # Short-Description:    Starts the FHEM server
@@ -294,31 +294,31 @@ cat > /etc/init.d/fhem <<EOF
 
 set -e
 
-case "\$1" in
+case "\${1}" in
 'start')
         echo "Starting fhem..."
-        start-stop-daemon -d $FHEM_PATH --start --chuid $FHEM_USER_NAME --start --exec $FHEM_DAEMON -- $FHEM_DAEMON_OPTS
+        start-stop-daemon -d ${FHEM_PATH} --start --chuid ${FHEM_USER_NAME} --start --exec ${FHEM_DAEMON} -- ${FHEM_DAEMON_OPTS}
         RETVAL=\$?
         ;;
 'stop')
         echo "Stopping fhem..."
-        start-stop-daemon -d $FHEM_PATH --stop --chuid $FHEM_USER_NAME --stop --exec $FHEM_DAEMON -- $FHEM_DAEMON_STOP_OPTS
+        start-stop-daemon -d ${FHEM_PATH} --stop --chuid ${FHEM_USER_NAME} --stop --exec ${FHEM_DAEMON} -- ${FHEM_DAEMON_STOP_OPTS}
         RETVAL=\$?
         ;;
 'status')
         cnt=\`ps -ef | grep "fhem.pl" | grep -v grep | wc -l\`
-        if [ "\$cnt" -eq "0" ] ; then
+        if [ "\${cnt}" -eq "0" ] ; then
                 echo "fhem is not running"
         else
                 echo "fhem is running"
         fi
         ;;
 *)
-        echo "Usage: \$0 { start | stop | status }"
+        echo "Usage: \${0} { start | stop | status }"
         RETVAL=1
         ;;
 esac
-exit \$RETVAL
+exit \${RETVAL}
 EOF
 
 /etc/init.d/fhem start
